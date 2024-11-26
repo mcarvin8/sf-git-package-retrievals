@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Package xmlns="http://soap.sforce.com/2006/04/metadata">
+   <types>
+      <members>Account</members>
+      <members>Contact</members>
+      <members>Opportunity</members>
+      <members>Case</members>
+      <members>Case</members>
+      <members>OpportunityLineItem</members>
+      <members>Product2</members>
+      <members>Contract</members>
+      <members>ContractLineItem</members>
+      <members>Asset</members>
+      <members>Asset</members>
+      <member>AccountContactRelation</member>
+      <member>Order</member>
+      <member>OrderItem</member>
+      <name>CustomObject</name>
+   </types>
+</Package>

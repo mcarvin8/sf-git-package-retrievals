@@ -1,0 +1,32 @@
+image: ubuntu:latest
+
+stages:
+  - pipeline
+
+variables:
+  DEPLOY_TIMEOUT: 240
+
+packageRetrieval:
+  stage: pipeline
+  rules:
+    - if: $PACKAGE_NAME && $CI_PIPELINE_SOURCE == 'schedule' && $JOB_NAME == 'metadataRetrieval'
+      when: always
+    - when: never
+  allow_failure: false
+  before_script:
+    - apt-get update
+    - apt-get install -y curl git
+    - curl -fsSL https://deb.nodesource.com/setup_lts.x | bash -
+    - apt-get install -y nodejs
+    - npm install --global @salesforce/cli@latest
+    - sf version --verbose --json
+    - git fetch -q
+    - git config user.name "${BOT_NAME}"
+    - git config user.email "${BOT_USER_NAME}@noreply.${CI_SERVER_HOST}"
+    - git checkout -q $CI_COMMIT_BRANCH
+    - git pull --ff -q
+  script:
+    - echo $ORG_AUTH_URL | sf org login sfdx-url --set-default --sfdx-url-stdin
+    - source ./scripts/retrieve_packages.sh
+  tags: 
+    - aws,prd,us-west-2
