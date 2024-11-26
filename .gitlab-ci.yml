@@ -5,6 +5,7 @@ stages:
 
 variables:
   DEPLOY_TIMEOUT: 240
+  GIT_HTTPS_PATH: "https://${BOT_NAME}:${PROJECT_TOKEN}@${CI_SERVER_HOST}/${CI_PROJECT_PATH}.git"
 
 packageRetrieval:
   stage: pipeline
