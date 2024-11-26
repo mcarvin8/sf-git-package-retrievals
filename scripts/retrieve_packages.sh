@@ -20,7 +20,3 @@ fi
 # hard reset required before switching back to trigger SHA
 rm -rf manifest
 git reset --hard
-
-# Cleanup, switch back to the SHA that triggered this pipeline and delete local branches
-git -c advice.detachedHead=false checkout -q $CI_COMMIT_SHORT_SHA
-git branch -D $CI_COMMIT_BRANCH
