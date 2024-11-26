@@ -12,7 +12,7 @@ if git status --porcelain | grep '^ M force-app/'; then
     git add force-app
     git commit -m "Retrieve latest metadata defined in $PACKAGE_NAME"
     # Push changes to remote, skipping CI pipeline
-    git push "https://${BOT_NAME}:${PROJECT_TOKEN}@${CI_SERVER_HOST}/${CI_PROJECT_PATH}.git" -o ci.skip
+    git push "$GIT_HTTPS_PATH" -o ci.skip
 else
     echo "There are no changes in the force-app directory."
 fi
