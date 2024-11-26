@@ -28,5 +28,9 @@ packageRetrieval:
   script:
     - echo $ORG_AUTH_URL | sf org login sfdx-url --set-default --sfdx-url-stdin
     - source ./scripts/retrieve_packages.sh
+  # Cleanup, switch back to the SHA that triggered this pipeline and delete local branches
+  after_script:
+    - git -c advice.detachedHead=false checkout -q $CI_COMMIT_SHORT_SHA
+    - git branch -D $CI_COMMIT_BRANCH
   tags: 
     - aws,prd,us-west-2
