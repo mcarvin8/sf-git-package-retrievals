@@ -14,7 +14,7 @@ if git status --porcelain | grep '^ M force-app/'; then
     # Push changes to remote, skipping CI pipeline
     git push "https://${BOT_NAME}:${PROJECT_TOKEN}@${CI_SERVER_HOST}/${CI_PROJECT_PATH}.git" -o ci.skip
 else
-    echo "There are no changes in the force-app directory on $branch_name."
+    echo "There are no changes in the force-app directory."
 fi
 
 # hard reset required before switching back to trigger SHA
