@@ -34,3 +34,9 @@ When setting up the schedules, ensure the 2 variables are provided:
 - `PACKAGE_NAME` should be the file-name of the XML, not the full-path. Example: `CustomObjects.xml`
 
 These schedules should be set up on the org branch you want to retrieve metadata for.
+
+## Adding to SFDX Project Template
+
+You can easily slide this into an existing sfdx project (`sfdx-project.json` file) by adding the `bash` and `packages` sub-folders into the `scripts` folder and then add the jobs to your CI/CD configuration file.
+
+Your project's `.gitignore` should be updated to ignore the `manifest` folder.

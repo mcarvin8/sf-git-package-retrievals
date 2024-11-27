@@ -3,7 +3,7 @@ set -e
 
 # copy the package.xml to the manifest folder
 mkdir -p manifest
-cp -f "packages/$PACKAGE_NAME" "manifest/package.xml"
+cp -f "scripts/packages/$PACKAGE_NAME" "manifest/package.xml"
 sf project retrieve start --manifest manifest/package.xml --ignore-conflicts --wait $DEPLOY_TIMEOUT
 
 # Check if there are changes
