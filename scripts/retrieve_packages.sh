@@ -8,13 +8,13 @@ sf project retrieve start --manifest manifest/package.xml --ignore-conflicts --w
 
 # Check if there are changes in the "force-app" folder
 if git status --porcelain | grep '^ M force-app/'; then
-    echo "Changes found in the force-app directory..."
-    git add force-app
+    echo "Changes found in your package directories..."
+    git add .
     git commit -m "Retrieve latest metadata defined in $PACKAGE_NAME"
     # Push changes to remote, skipping CI pipeline
     git push "$GIT_HTTPS_PATH" -o ci.skip
 else
-    echo "There are no changes in the force-app directory."
+    echo "There are no changes in your package directories."
 fi
 
 # hard reset required before switching back to trigger SHA
