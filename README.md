@@ -11,7 +11,7 @@ The git configuration should all be done in the CI/CD configuration file. The `s
 
 The script depends on 2 environment variables:
 - `DEPLOY_TIMEOUT` = The wait period in seconds the Salesforce CLI should wait when running retrieve commands
-- `GIT_HTTPS_PATH` = The HTTPS path which should be used by the `git push` command. In this example, it contains the some pre-defined GitLab CI/CD variables and the Project Access Token variables.
+- `GIT_HTTPS_PATH` = The HTTPS path which should be used by the `git push` command. In this example, it contains pre-defined GitLab CI/CD variables and the Project Access Token variables.
 
 The script assumes you are using the `force-app` directory for metadata, which can be changed based on your package directories.
 
