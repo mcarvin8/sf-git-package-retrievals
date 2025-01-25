@@ -1,11 +1,11 @@
 # sf-git-package-retrievals
-Framework to automate metadata retrievals from a Salesforce org into a Git branch. This has been developed on GitLab CI/CD, but given tweaks for a specific CI/CD platform, this should be able to work on other platforms.
+Framework to automate metadata retrievals from a Salesforce org into a Git branch on a scheduled basis. This has been developed on GitLab CI/CD, but given tweaks for a specific CI/CD platform, this should be able to work on other platforms.
 
 This assumes you have different long-running git branches for each org.
 
 ## Requirements
 
-The docker container requires the Salesforce CLI and git. The git commands requires an active git user in your repository. In this example, we will be using a [GitLab project access token](https://docs.gitlab.com/ee/user/project/settings/project_access_tokens.htm) with `write_repository` and `api` access to make the git commands.
+The docker container requires the Salesforce CLI and git. The git commands requires an active git user in your repository. In this example, we will be using a [GitLab project access token](https://docs.gitlab.com/ee/user/project/settings/project_access_tokens.html) with `write_repository` and `api` access to make the git commands.
 
 The git configuration should all be done in the CI/CD configuration file. The `scripts/retrieve_packages.sh` script assumes the git configuration is done. 
 
