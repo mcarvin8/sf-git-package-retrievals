@@ -2,19 +2,20 @@
 <Package xmlns="http://soap.sforce.com/2006/04/metadata">
    <types>
       <members>Account</members>
+      <members>AccountContactRelation</members>
+      <members>Asset</members>
+      <members>Campaign</members>
+      <members>CampaignMember</members>
+      <members>Case</members>
       <members>Contact</members>
-      <members>Opportunity</members>
-      <members>Case</members>
-      <members>Case</members>
-      <members>OpportunityLineItem</members>
-      <members>Product2</members>
       <members>Contract</members>
       <members>ContractLineItem</members>
-      <members>Asset</members>
-      <members>Asset</members>
-      <member>AccountContactRelation</member>
-      <member>Order</member>
-      <member>OrderItem</member>
+      <members>Lead</members>
+      <members>Opportunity</members>
+      <members>OpportunityLineItem</members>
+      <members>Order</members>
+      <members>OrderItem</members>
+      <members>Product2</members>
       <name>CustomObject</name>
    </types>
 </Package>
