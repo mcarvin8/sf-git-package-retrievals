@@ -1,4 +1,4 @@
-# sf-package-retrievals
+# sf-git-package-retrievals
 Framework to automate metadata retrievals from a Salesforce org into a Git branch. This has been developed on GitLab CI/CD, but given tweaks for a specific CI/CD platform, this should be able to work on other platforms.
 
 This assumes you have different long-running git branches for each org.
@@ -24,6 +24,10 @@ In the CI/CD configuration file, the following environment variables should be s
 - `CI_PROJECT_PATH` = the git repo path
 - `CI_COMMIT_SHORT_SHA` = the SHA the pipeline is running on
 -  `ORG_AUTH_URL` = Force Authorization URL for the intended Salesforce org
+
+## Line-Endings
+
+The script will ignore line-ending changes after the retrievals, but you should use a `.gitattributes` file like the one provided to normalize line-endings in your repo.
 
 ## Scheduled Pipelines
 
