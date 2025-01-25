@@ -7,7 +7,7 @@ cp -f "scripts/packages/$PACKAGE_NAME" "manifest/package.xml"
 sf project retrieve start --manifest manifest/package.xml --ignore-conflicts --wait $DEPLOY_TIMEOUT
 
 # Check if there are changes
-if git status --porcelain | grep -q '^[AMDRC]'; then
+if git diff --ignore-cr-at-eol --name-only | grep -q '.'; then
     echo "Changes found in your package directories..."
     git add .
     git commit -m "Retrieve latest metadata defined in $PACKAGE_NAME"
