@@ -5,7 +5,7 @@ stages:
 
 variables:
   DEPLOY_TIMEOUT: 240
-  GIT_HTTPS_PATH: "https://${BOT_NAME}:${PROJECT_TOKEN}@${CI_SERVER_HOST}/${CI_PROJECT_PATH}.git"
+  GIT_HTTPS_PATH: "https://${GIT_NAME}:${GIT_HTTPS_TOKEN}@${CI_SERVER_HOST}/${CI_PROJECT_PATH}.git"
 
 packageRetrieval:
   stage: pipeline
@@ -22,8 +22,8 @@ packageRetrieval:
     - npm install --global @salesforce/cli@latest
     - sf version --verbose --json
     - git fetch -q
-    - git config user.name "${BOT_NAME}"
-    - git config user.email "${BOT_USER_NAME}@noreply.${CI_SERVER_HOST}"
+    - git config user.name "${GIT_NAME}"
+    - git config user.email "${GIT_USER_NAME}@noreply.${CI_SERVER_HOST}"
     - git checkout -q $CI_COMMIT_BRANCH
     - git pull --ff -q
   script:
