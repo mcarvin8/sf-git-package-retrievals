@@ -1,5 +1,5 @@
 # sf-git-package-retrievals
-Framework to automate metadata retrievals from a Salesforce org into a Git branch on a scheduled basis. This has been developed on GitLab CI/CD, but given tweaks for a specific CI/CD platform, this should be able to work on other platforms.
+Schedule automated metadata retrievals from a Salesforce org into a Git branch using manifest files (package.xml). This has been developed on GitLab CI/CD, but given tweaks for a specific CI/CD platform, this should be able to work on other git platforms.
 
 ## Requirements
 
@@ -22,6 +22,8 @@ In the CI/CD configuration file, the following environment variables should be s
 - `CI_PROJECT_PATH` = the git repo path
 - `CI_COMMIT_SHORT_SHA` = the SHA the pipeline is running on
 - `ORG_AUTH_URL` = Force Authorization URL for the intended Salesforce org
+
+You can add/modify manifest files in `scripts/packages` to retrieve the specific metadata you want regularly retrieved into git. I recommend limiting the number of metadata types in each package to ensure the retrievals run faster. I also recommend ensuring your retrieval schedules are unique to avoid any overlap when pushing to the git branch.
 
 ## Line-Endings
 
