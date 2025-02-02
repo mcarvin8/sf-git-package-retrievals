@@ -16,6 +16,7 @@ In the CI/CD configuration file, the following environment variables should be s
   - In this example, `GIT_HTTPS_PATH` is `https://${BOT_NAME}:${PROJECT_TOKEN}@${CI_SERVER_HOST}/${CI_PROJECT_PATH}.git`
 - `GIT_NAME` = should be the name of the git user
 - `GIT_USER_NAME` = should be the git user name
+- `GIT_USER_EMAIL` = should be the git user email. By default in the GitLab example, this is the pre-defined GitLab project access token email address format. Provide this variable if you want to override it.
 - `GIT_HTTPS_TOKEN` = should contain the HTTPS token value 
 - `CI_SERVER_HOST` = the instance URL for the CI/CD server
 - `CI_COMMIT_BRANCH` = the branch this pipeline is running on, should be the branch you want to push metadata back to
