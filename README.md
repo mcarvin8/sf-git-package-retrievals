@@ -34,8 +34,8 @@ The script will ignore line-ending changes after the retrievals, but you should 
 The GitLab example uses scheduled pipelines to run the automated retrievals. 
 
 When setting up the schedules, ensure these variables are set:
-- `JOB_NAME` should be "metadataRetrieval"
-- `PACKAGE_NAME` should be the file-name of the XML, not the full-path. Example: `CustomObjects.xml`
+- `JOB_NAME` should be `metadataRetrieval`
+- `PACKAGE_NAME` should be the manifest file-name, not the full-path, i.e. `CustomObjects.xml`
 - `ORG_AUTH_URL` should be the Force Authorization UFL for the org. Use "Expand variable reference" to use existing URLs stored as variables.
 
 These schedules should be set up on the git branch you want to retrieve metadata for.
