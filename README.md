@@ -3,9 +3,9 @@ Schedule automated metadata retrievals from a Salesforce org into a Git branch u
 
 ## Requirements
 
-The docker container requires the Salesforce CLI and git. The git commands requires an active git user in your repository. In this example, we will be using a [GitLab project access token](https://docs.gitlab.com/ee/user/project/settings/project_access_tokens.html) with `write_repository` and `api` access to make the git commands.
+The docker container requires the Salesforce CLI, bash, and git. The git commands requires an active git user in your repository. In this example, we will be using a [GitLab project access token](https://docs.gitlab.com/ee/user/project/settings/project_access_tokens.html) with `write_repository` and `api` access to make the git commands.
 
-The git configuration should all be done in the CI/CD configuration file. The `scripts/retrieve_packages.sh` script assumes the git configuration is done. 
+The git configuration (user name and email) should all be done in the CI/CD configuration file. The `scripts/retrieve_packages.sh` script assumes the git configuration is already set. 
 
 The script depends on 2 environment variables:
 - `DEPLOY_TIMEOUT` = The wait period in seconds the Salesforce CLI should wait when running retrieve commands
@@ -40,8 +40,8 @@ When setting up the schedules, ensure these variables are set:
 
 These schedules should be set up on the git branch you want to retrieve metadata for.
 
-## Adding to SFDX Project Template
+## Adding to an Existing SFDX Project
 
-You can easily slide this into an existing sfdx project (`sfdx-project.json` file) by adding the `bash` and `packages` sub-folders into the `scripts` folder and then add the jobs to your CI/CD configuration file.
-
-Your project's `.gitignore` should be updated to ignore the `manifest` folder.
+You can easily slide this into an existing sfdx project (`sfdx-project.json` file) by:
+- adding the `bash` and `packages` sub-folders into the `scripts` folder
+- adding the jobs to your CI/CD configuration file
