@@ -1,8 +1,6 @@
 # sf-git-package-retrievals
 Framework to automate metadata retrievals from a Salesforce org into a Git branch on a scheduled basis. This has been developed on GitLab CI/CD, but given tweaks for a specific CI/CD platform, this should be able to work on other platforms.
 
-This assumes you have different long-running git branches for each org.
-
 ## Requirements
 
 The docker container requires the Salesforce CLI and git. The git commands requires an active git user in your repository. In this example, we will be using a [GitLab project access token](https://docs.gitlab.com/ee/user/project/settings/project_access_tokens.html) with `write_repository` and `api` access to make the git commands.
@@ -15,12 +13,12 @@ The script depends on 2 environment variables:
 
 In the CI/CD configuration file, the following environment variables should be set:
 - `GIT_HTTPS_PATH` and `DEPLOY_TIMEOUT` variables required for the script
-  - In this example, `GIT_HTTPS_PATH` is "https://${BOT_NAME}:${PROJECT_TOKEN}@${CI_SERVER_HOST}/${CI_PROJECT_PATH}.git"
+  - In this example, `GIT_HTTPS_PATH` is `https://${BOT_NAME}:${PROJECT_TOKEN}@${CI_SERVER_HOST}/${CI_PROJECT_PATH}.git`
 - `BOT_NAME` = should be the name of the project access token bot user
 - `BOT_USER_NAME` = should be the bot user name
 - `PROJECT_TOKEN` = should contain the token value which is shown 1-time only after creating the token. 
 - `CI_SERVER_HOST` = the instance URL for the CI/CD server
-- `CI_COMMIT_BRANCH` = the branch this pipeline is running on, should be the org branch
+- `CI_COMMIT_BRANCH` = the branch this pipeline is running on, should be the branch you want to push metadata back to
 - `CI_PROJECT_PATH` = the git repo path
 - `CI_COMMIT_SHORT_SHA` = the SHA the pipeline is running on
 - `ORG_AUTH_URL` = Force Authorization URL for the intended Salesforce org
@@ -38,7 +36,7 @@ When setting up the schedules, ensure the 2 variables are provided:
 - `PACKAGE_NAME` should be the file-name of the XML, not the full-path. Example: `CustomObjects.xml`
 - `ORG_AUTH_URL` should be the Force Authorization UFL for the org. Use "Expand variable reference" to use existing URLs stored as variables.
 
-These schedules should be set up on the org branch you want to retrieve metadata for.
+These schedules should be set up on the git branch you want to retrieve metadata for.
 
 ## Adding to SFDX Project Template
 
