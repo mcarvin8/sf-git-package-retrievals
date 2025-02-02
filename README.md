@@ -23,7 +23,7 @@ In the CI/CD configuration file, the following environment variables should be s
 - `CI_COMMIT_BRANCH` = the branch this pipeline is running on, should be the org branch
 - `CI_PROJECT_PATH` = the git repo path
 - `CI_COMMIT_SHORT_SHA` = the SHA the pipeline is running on
--  `ORG_AUTH_URL` = Force Authorization URL for the intended Salesforce org
+- `ORG_AUTH_URL` = Force Authorization URL for the intended Salesforce org
 
 ## Line-Endings
 
@@ -36,6 +36,7 @@ The GitLab example uses scheduled pipelines to run the automated retrievals.
 When setting up the schedules, ensure the 2 variables are provided:
 - `JOB_NAME` should be "metadataRetrieval"
 - `PACKAGE_NAME` should be the file-name of the XML, not the full-path. Example: `CustomObjects.xml`
+- `ORG_AUTH_URL` shoudk be the Force Authorization UFL for the org. Use "Expand variable reference" to use existing URLs stored as variables.
 
 These schedules should be set up on the org branch you want to retrieve metadata for.
 
