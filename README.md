@@ -14,9 +14,9 @@ The script depends on 2 environment variables:
 In the CI/CD configuration file, the following environment variables should be set:
 - `GIT_HTTPS_PATH` and `DEPLOY_TIMEOUT` variables required for the script
   - In this example, `GIT_HTTPS_PATH` is `https://${BOT_NAME}:${PROJECT_TOKEN}@${CI_SERVER_HOST}/${CI_PROJECT_PATH}.git`
-- `BOT_NAME` = should be the name of the project access token bot user
-- `BOT_USER_NAME` = should be the bot user name
-- `PROJECT_TOKEN` = should contain the token value which is shown 1-time only after creating the token. 
+- `GIT_NAME` = should be the name of the git user
+- `GIT_USER_NAME` = should be the git user name
+- `GIT_HTTPS_TOKEN` = should contain the HTTPS token value 
 - `CI_SERVER_HOST` = the instance URL for the CI/CD server
 - `CI_COMMIT_BRANCH` = the branch this pipeline is running on, should be the branch you want to push metadata back to
 - `CI_PROJECT_PATH` = the git repo path
