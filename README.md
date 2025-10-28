@@ -10,6 +10,7 @@ The git configuration (user name and email) should all be done in the CI/CD conf
 The script depends on 2 environment variables:
 - `DEPLOY_TIMEOUT` = The wait period in seconds the Salesforce CLI should wait when running retrieve commands
 - `GIT_HTTPS_PATH` = The HTTPS path which should be used by the `git push` command. In this example, it contains pre-defined GitLab CI/CD variables and the Project Access Token variables.
+- `PREPURGE` = Optionally, set this to `true` to delete the existing metadata folders based on the package.xml entries to ensure a clean retrieval.
 
 In the CI/CD configuration file, the following environment variables should be set:
 - `GIT_HTTPS_PATH` and `DEPLOY_TIMEOUT` variables required for the script
@@ -38,6 +39,7 @@ When setting up the schedules, ensure these variables are set:
 - `JOB_NAME` should be `metadataRetrieval`
 - `PACKAGE_NAME` should be the manifest file-name, not the full-path, i.e. `CustomObjects.xml`
 - `ORG_AUTH_URL` should be the Force Authorization UFL for the org. Use "Expand variable reference" to use existing URLs stored as variables.
+- `PREPURGE` is optional and should be set to `true` to enable deletion of metadata folders before the retrieval runs.
 
 These schedules should be set up on the git branch you want to retrieve metadata for.
 
