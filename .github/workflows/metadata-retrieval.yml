@@ -1,5 +1,7 @@
 # Retrieves Salesforce metadata into the checked-out branch using scripts/bash/retrieve_packages.sh
 # Prerequisites: repository secret ORG_AUTH_URL (SFDX auth URL), sfdx-project.json, force-app/
+# ORG_ALIAS: use repository/organization variable ORG_ALIAS (recommended), secret ORG_ALIAS, or
+# workflow_dispatch input org_alias — see env on the login step.
 #
 # Scheduled runs use env.PACKAGE_NAME below. For a different manifest per schedule, duplicate
 # this file with another name and set PACKAGE_NAME + cron accordingly.
@@ -22,6 +24,11 @@ on:
         options:
           - "false"
           - "true"
+      org_alias:
+        description: Salesforce org alias (optional; overrides Actions variable / secret ORG_ALIAS)
+        required: false
+        default: ""
+        type: string
   schedule:
     # Daily 07:00 UTC — change as needed
     - cron: "0 7 * * *"
@@ -84,14 +91,21 @@ jobs:
       - name: Log in to Salesforce org
         env:
           ORG_AUTH_URL: ${{ secrets.ORG_AUTH_URL }}
-          ORG_ALIAS: ${{ secrets.ORG_ALIAS }}
+          # Non-secret: prefer repository/org variable ORG_ALIAS; secret ORG_ALIAS still works; manual run can override via input.
+          ORG_ALIAS: ${{ github.event_name == 'workflow_dispatch' && inputs.org_alias != '' && inputs.org_alias || vars.ORG_ALIAS || secrets.ORG_ALIAS }}
         run: |
           set -euo pipefail
           if [ -z "${ORG_AUTH_URL:-}" ]; then
             echo "ORG_AUTH_URL secret is not set." >&2
             exit 1
           fi
+          if [ -z "${ORG_ALIAS:-}" ]; then
+            echo "ORG_ALIAS is not set. Add repository variable ORG_ALIAS, or secret ORG_ALIAS, or pass org_alias when running workflow_dispatch." >&2
+            exit 1
+          fi
           echo "$ORG_AUTH_URL" | sf org login sfdx-url --set-default --alias $ORG_ALIAS --sfdx-url-stdin
+          # Later steps need ORG_ALIAS (e.g. Objects.xml → sf project generate manifest --from-org)
+          echo "ORG_ALIAS=$ORG_ALIAS" >> "$GITHUB_ENV"
 
       - name: Retrieve metadata and push if changed
         run: |

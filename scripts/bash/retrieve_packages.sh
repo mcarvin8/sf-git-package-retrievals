@@ -10,12 +10,12 @@
 #   - PREPURGE: Set to "true" to enable pre-purge of metadata folders
 #   - DEPLOY_TIMEOUT: Wait time for retrieval operation
 #   - GIT_HTTPS_PATH: HTTPS path of the Git repo to push changes back to
-#   - SF_RETRIEVE_ORG_ALIAS (optional): Salesforce org alias for manifest generation when
-#     PACKAGE_NAME is Objects.xml (default: PRODUCTION, matching packageBackfillPrd login)
+#   - ORG_ALIAS: Must match the Salesforce CLI org alias used for retrieve. When PACKAGE_NAME
+#     is Objects.xml, the same alias is passed to sf project generate manifest --from-org.
 #
 # Objects.xml: Before retrieve, builds manifest/package.xml from the org with ONLY
 #   CustomObject via:
-#     sf project generate manifest --from-org <alias> --metadata CustomObject ...
+#     sf project generate manifest --from-org $ORG_ALIAS --metadata CustomObject ...
 #   (no wildcards). This avoids full-org manifest generation, which fails on newer CLIs
 #   when the org contains metadata types not yet in the CLI registry (e.g. OAS Yaml Schema).
 ################################################################################
@@ -24,7 +24,10 @@ set -e
 mkdir -p manifest
 
 if [[ "$PACKAGE_NAME" == "Objects.xml" ]]; then
-    ORG_ALIAS="${SF_RETRIEVE_ORG_ALIAS:-PRODUCTION}"
+    if [[ -z "${ORG_ALIAS:-}" ]]; then
+        echo "ERROR: PACKAGE_NAME is Objects.xml but ORG_ALIAS is not set. Export ORG_ALIAS in CI (same alias used for sf org login)." >&2
+        exit 1
+    fi
     echo "Objects.xml: generating manifest/package.xml (CustomObject only, no wildcards) from '${ORG_ALIAS}'..."
     sf project generate manifest \
         --from-org "$ORG_ALIAS" \
