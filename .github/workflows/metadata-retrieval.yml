@@ -84,13 +84,14 @@ jobs:
       - name: Log in to Salesforce org
         env:
           ORG_AUTH_URL: ${{ secrets.ORG_AUTH_URL }}
+          ORG_ALIAS: ${{ secrets.ORG_ALIAS }}
         run: |
           set -euo pipefail
           if [ -z "${ORG_AUTH_URL:-}" ]; then
             echo "ORG_AUTH_URL secret is not set." >&2
             exit 1
           fi
-          echo "$ORG_AUTH_URL" | sf org login sfdx-url --set-default --sfdx-url-stdin
+          echo "$ORG_AUTH_URL" | sf org login sfdx-url --set-default --alias $ORG_ALIAS --sfdx-url-stdin
 
       - name: Retrieve metadata and push if changed
         run: |

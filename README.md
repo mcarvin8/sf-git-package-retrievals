@@ -39,7 +39,8 @@ Used by `scripts/bash/retrieve_packages.sh` and expected to be set before `sourc
 | `DEPLOY_TIMEOUT` | Yes | Seconds for `sf project retrieve start --wait` (e.g. `240`). |
 | `GIT_HTTPS_PATH` | Yes | Remote URL used for `git push` (HTTPS with token embedded per your provider’s docs). |
 | `PREPURGE` | No | Set to `true` to delete existing `force-app/...` folders for metadata types in that manifest before retrieve. Requires `jq` on the runner if you use this. |
-| `ORG_AUTH_URL` | Yes (in CI) | SFDX auth URL for the org; piped to `sf org login sfdx-url --set-default --sfdx-url-stdin`. **Treat as a secret.** |
+| `ORG_AUTH_URL` | Yes (in CI) | SFDX auth URL for the org; piped to `sf org login sfdx-url --set-default --alias $ORG_ALIAS --sfdx-url-stdin`. **Treat as a secret.** |
+| `ORG_ALIAS` | Yes (in CI) | SFDX auth alias for the org; piped to `sf org login sfdx-url --set-default --alias $ORG_ALIAS --sfdx-url-stdin`. |
 
 Git identity must be configured **before** sourcing the script (`git config user.name` / `user.email`). The script assumes that is already done.
 
@@ -69,6 +70,7 @@ Create a [scheduled pipeline](https://docs.gitlab.com/ee/ci/pipelines/schedules.
 | `JOB_NAME` | `metadataRetrieval` |
 | `PACKAGE_NAME` | Manifest file name only, e.g. `Objects.xml` |
 | `ORG_AUTH_URL` | SFDX auth URL for the org (often via masked variable; use “Expand variable reference” if you store the URL in another variable) |
+| `ORG_ALIAS` | SFDX auth alias for the org (can be set in CI/CD variables or from the scheduled pipeline) |
 | `PREPURGE` | Optional: `true` to enable pre-purge |
 
 Use **separate schedules** (or stagger times) per manifest so jobs do not overlap on the same branch.

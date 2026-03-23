@@ -28,7 +28,7 @@ packageRetrieval:
     - git checkout -q $CI_COMMIT_BRANCH
     - git pull --ff -q
   script:
-    - echo $ORG_AUTH_URL | sf org login sfdx-url --set-default --sfdx-url-stdin
+    - echo $ORG_AUTH_URL | sf org login sfdx-url --set-default --alias $ORG_ALIAS --sfdx-url-stdin
     - source ./scripts/bash/retrieve_packages.sh
   # Cleanup, switch back to the SHA that triggered this pipeline and delete local branches
   after_script:

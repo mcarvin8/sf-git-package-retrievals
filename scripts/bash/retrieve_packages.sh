@@ -10,12 +10,34 @@
 #   - PREPURGE: Set to "true" to enable pre-purge of metadata folders
 #   - DEPLOY_TIMEOUT: Wait time for retrieval operation
 #   - GIT_HTTPS_PATH: HTTPS path of the Git repo to push changes back to
+#   - SF_RETRIEVE_ORG_ALIAS (optional): Salesforce org alias for manifest generation when
+#     PACKAGE_NAME is Objects.xml (default: PRODUCTION, matching packageBackfillPrd login)
+#
+# Objects.xml: Before retrieve, builds manifest/package.xml from the org with ONLY
+#   CustomObject via:
+#     sf project generate manifest --from-org <alias> --metadata CustomObject ...
+#   (no wildcards). This avoids full-org manifest generation, which fails on newer CLIs
+#   when the org contains metadata types not yet in the CLI registry (e.g. OAS Yaml Schema).
 ################################################################################
 set -e
 
-# copy the package.xml to the manifest folder, overwriting the current package
 mkdir -p manifest
-cp -f "scripts/packages/$PACKAGE_NAME" "manifest/package.xml"
+
+if [[ "$PACKAGE_NAME" == "Objects.xml" ]]; then
+    ORG_ALIAS="${SF_RETRIEVE_ORG_ALIAS:-PRODUCTION}"
+    echo "Objects.xml: generating manifest/package.xml (CustomObject only, no wildcards) from '${ORG_ALIAS}'..."
+    sf project generate manifest \
+        --from-org "$ORG_ALIAS" \
+        --metadata CustomObject \
+        --output-dir manifest \
+        --name package
+    if [[ ! -f manifest/package.xml ]]; then
+        echo "ERROR: Expected manifest/package.xml after sf project generate manifest." >&2
+        exit 1
+    fi
+else
+    cp -f "scripts/packages/$PACKAGE_NAME" "manifest/package.xml"
+fi
 
 # Function to map metadata types to force-app folder names using this repo's version of metadataRegistry.json
 # copied from @salesforce/source-deploy-retrieve
