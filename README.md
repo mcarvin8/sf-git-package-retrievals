@@ -1,50 +1,119 @@
-# sf-git-package-retrievals
-Schedule automated metadata retrievals from a Salesforce org into a Git branch using manifest files (package.xml). This has been developed on GitLab CI/CD, but given tweaks for a specific CI/CD platform, this should be able to work on other git platforms.
+# Salesforce metadata → Git (scheduled retrievals)
 
-## Requirements
+This repository is a **template** for pulling metadata from a Salesforce org into your Git repo on a **schedule** (or on demand). Each run uses a **manifest** (`package.xml`) from `scripts/packages/`, copies it to `manifest/package.xml`, runs `sf project retrieve start`, and **commits and pushes** any changes under `force-app/` to the **same branch** the job checked out.
 
-The docker container requires the Salesforce CLI, bash, and git. The git commands requires an active git user in your repository. In this example, we will be using a [GitLab project access token](https://docs.gitlab.com/ee/user/project/settings/project_access_tokens.html) with `write_repository` and `api` access to make the git commands.
+The core logic lives in `scripts/bash/retrieve_packages.sh`. CI (GitLab or GitHub) installs the Salesforce CLI, authenticates with an org URL, sets git identity, checks out your target branch, runs that script, then resets the workspace.
 
-The git configuration (user name and email) should all be done in the CI/CD configuration file. The `scripts/retrieve_packages.sh` script assumes the git configuration is already set. 
+---
 
-The script depends on 2 environment variables:
-- `DEPLOY_TIMEOUT` = The wait period in seconds the Salesforce CLI should wait when running retrieve commands
-- `GIT_HTTPS_PATH` = The HTTPS path which should be used by the `git push` command. In this example, it contains pre-defined GitLab CI/CD variables and the Project Access Token variables.
-- `PREPURGE` = Optionally, set this to `true` to delete the existing metadata folders based on the package.xml entries to ensure a clean retrieval.
+## What you need in the repo
 
-In the CI/CD configuration file, the following environment variables should be set:
-- `GIT_HTTPS_PATH` and `DEPLOY_TIMEOUT` variables required for the script
-  - In this example, `GIT_HTTPS_PATH` is `https://${BOT_NAME}:${PROJECT_TOKEN}@${CI_SERVER_HOST}/${CI_PROJECT_PATH}.git`
-- `GIT_NAME` = should be the name of the git user
-- `GIT_USER_NAME` = should be the git user name
-- `GIT_USER_EMAIL` = should be the git user email. By default in the GitLab example, this is the pre-defined GitLab project access token email address format. Provide this variable if you want to override it.
-- `GIT_HTTPS_TOKEN` = should contain the HTTPS token value 
-- `CI_SERVER_HOST` = the instance URL for the CI/CD server
-- `CI_COMMIT_BRANCH` = the branch this pipeline is running on, should be the branch you want to push metadata back to
-- `CI_PROJECT_PATH` = the git repo path
-- `CI_COMMIT_SHORT_SHA` = the SHA the pipeline is running on
-- `ORG_AUTH_URL` = Force Authorization URL for the intended Salesforce org
+| Requirement | Purpose |
+|-------------|---------|
+| **SFDX project** | Root `sfdx-project.json` and a default package path (typically `force-app/main/default`). Create with `sf project generate` or copy from an existing project. |
+| **Manifests** | One or more XML files in `scripts/packages/` (e.g. `Objects.xml`, `Apex.xml`). Each file lists the metadata types and members to retrieve. |
+| **`.gitattributes`** | Keeps line endings consistent so retrievals do not churn on CRLF vs LF (see below). |
 
-You can add/modify manifest files in `scripts/packages` to retrieve the specific metadata you want regularly retrieved into git. I recommend limiting the number of metadata types in each package to ensure the retrievals run faster. I also recommend ensuring your retrieval schedules are unique to avoid any overlap when pushing to the git branch.
+---
 
-## Line-Endings
+## How retrieval works (end to end)
 
-The script will ignore line-ending changes after the retrievals, but you should use a `.gitattributes` file like the one provided to normalize line-endings in your repo.
+1. **Checkout** the branch you want to keep in sync (your scheduled job must target that branch).
+2. **Log in** to the org using a **SFDX auth URL** (stored as a CI secret).
+3. **Select a manifest** by setting `PACKAGE_NAME` to the **filename only** (e.g. `Objects.xml`), not a path.
+4. **Optional pre-purge**: If `PREPURGE=true`, folders under `force-app/main/default/` that correspond to metadata types in that manifest are removed before retrieve, so you get a clean pull for those types.
+5. **Retrieve** with `sf project retrieve start --manifest manifest/package.xml --ignore-conflicts --wait …`.
+6. **Commit and push** only if `force-app/` changed. The push uses credentials supplied by your CI platform. Commits include **`[skip ci]`** so the push does not start another metadata pipeline on GitHub (and GitLab respects the same skip markers).
 
-## Scheduled Pipelines
+**Scheduling strategy:** Use **different schedules** (or different workflow files) per manifest so two jobs do not push to the same branch at the same time. Keep each `package.xml` **focused** (fewer types per file) so runs finish faster and failures are easier to isolate.
 
-The GitLab example uses scheduled pipelines to run the automated retrievals. 
+---
 
-When setting up the schedules, ensure these variables are set:
-- `JOB_NAME` should be `metadataRetrieval`
-- `PACKAGE_NAME` should be the manifest file-name, not the full-path, i.e. `CustomObjects.xml`
-- `ORG_AUTH_URL` should be the Force Authorization UFL for the org. Use "Expand variable reference" to use existing URLs stored as variables.
-- `PREPURGE` is optional and should be set to `true` to enable deletion of metadata folders before the retrieval runs.
+## Environment variables (script + CI)
 
-These schedules should be set up on the git branch you want to retrieve metadata for.
+Used by `scripts/bash/retrieve_packages.sh` and expected to be set before `source ./scripts/bash/retrieve_packages.sh`:
 
-## Adding to an Existing SFDX Project
+| Variable | Required | Description |
+|----------|----------|-------------|
+| `PACKAGE_NAME` | Yes | Manifest **file name** under `scripts/packages/`, e.g. `CustomConfigurations.xml`. |
+| `DEPLOY_TIMEOUT` | Yes | Seconds for `sf project retrieve start --wait` (e.g. `240`). |
+| `GIT_HTTPS_PATH` | Yes | Remote URL used for `git push` (HTTPS with token embedded per your provider’s docs). |
+| `PREPURGE` | No | Set to `true` to delete existing `force-app/...` folders for metadata types in that manifest before retrieve. Requires `jq` on the runner if you use this. |
+| `ORG_AUTH_URL` | Yes (in CI) | SFDX auth URL for the org; piped to `sf org login sfdx-url --set-default --sfdx-url-stdin`. **Treat as a secret.** |
 
-You can easily slide this into an existing sfdx project (`sfdx-project.json` file) by:
-- adding the `bash` and `packages` sub-folders into the `scripts` folder
-- adding the jobs to your CI/CD configuration file
+Git identity must be configured **before** sourcing the script (`git config user.name` / `user.email`). The script assumes that is already done.
+
+---
+
+## Line endings
+
+Retrievals may introduce mixed line endings. The script renormalizes `force-app/` before committing. Use the provided **`.gitattributes`** in your repo so Git normalizes text files consistently.
+
+---
+
+## GitLab CI/CD (included)
+
+The example pipeline is **`.gitlab-ci.yml`**.
+
+- **Job** `packageRetrieval` runs only when the pipeline source is a **schedule** and variables match: `JOB_NAME=metadataRetrieval` and `PACKAGE_NAME` is set (see `rules` in the file).
+- **Installs**: Node LTS, `@salesforce/cli`, git.
+- **Runner**: The sample uses `tags: [aws, prd, us-west-2]` — replace with your runner tags or remove if you use shared runners.
+- **Git remote**: `GIT_HTTPS_PATH` is built from `GIT_NAME`, `GIT_HTTPS_TOKEN`, `CI_SERVER_HOST`, and `CI_PROJECT_PATH` (see variables in `.gitlab-ci.yml`).
+
+### Scheduled pipelines (GitLab)
+
+Create a [scheduled pipeline](https://docs.gitlab.com/ee/ci/pipelines/schedules.html) on the **branch** you want to update (e.g. `main`). For each schedule, set CI/CD variables:
+
+| Variable | Value |
+|----------|--------|
+| `JOB_NAME` | `metadataRetrieval` |
+| `PACKAGE_NAME` | Manifest file name only, e.g. `Objects.xml` |
+| `ORG_AUTH_URL` | SFDX auth URL for the org (often via masked variable; use “Expand variable reference” if you store the URL in another variable) |
+| `PREPURGE` | Optional: `true` to enable pre-purge |
+
+Use **separate schedules** (or stagger times) per manifest so jobs do not overlap on the same branch.
+
+---
+
+## GitHub Actions (example)
+
+The example workflow is **`.github/workflows/metadata-retrieval.yml`**.
+
+- **`schedule`**: Cron example (edit times and duplicate the workflow file if each package needs its own cadence).
+- **`workflow_dispatch`**: Run manually and choose manifest and optional pre-purge.
+- **Secrets**: Create repository secret `ORG_AUTH_URL` with your SFDX auth URL.
+- **Permissions**: The workflow requests `contents: write` so the default `GITHUB_TOKEN` can push.
+- **Optional repository variables** (Settings → Secrets and variables → Actions → Variables): `GIT_USER_NAME` and `GIT_USER_EMAIL` override the default `github-actions[bot]` identity for commits.
+
+For scheduled runs, set the default manifest in the workflow `env` (`PACKAGE_NAME`) or pass it only via manual dispatch — see comments in the workflow file.
+
+To run **multiple packages on different cadences**, copy the workflow file (e.g. `metadata-retrieval-objects.yml`, `metadata-retrieval-apex.yml`) and set a different `PACKAGE_NAME` and `cron` in each.
+
+---
+
+## Adding this to an existing Salesforce DX project
+
+1. Copy **`scripts/bash/`**, **`scripts/packages/`**, and **`scripts/registry/`** into your project’s `scripts/` folder (merge with existing `scripts` if needed).
+2. Add the **GitLab** and/or **GitHub** workflow from this repo to yours and adjust names, branches, secrets, and schedules.
+3. Ensure **`sfdx-project.json`** and **`force-app/`** exist at the project root.
+4. Add or edit **`manifest/`** only as needed — the script creates `manifest/package.xml` from `scripts/packages/$PACKAGE_NAME` and removes the folder at the end; `manifest/` is gitignored here.
+
+---
+
+## Security notes
+
+- Never commit SFDX auth URLs or long-lived tokens. Use CI **secrets** / protected variables.
+- Rotate org passwords and refresh auth URLs when people leave or sandboxes refresh.
+- Limit who can edit schedules and pipeline variables.
+
+---
+
+## Related files
+
+| Path | Role |
+|------|------|
+| `scripts/bash/retrieve_packages.sh` | Retrieve, optional pre-purge, commit, push |
+| `scripts/packages/*.xml` | Per-area manifests |
+| `scripts/registry/metadataRegistry.json` | Maps metadata type names to default folder names for pre-purge |
+| `.gitlab-ci.yml` | GitLab scheduled job |
+| `.github/workflows/metadata-retrieval.yml` | GitHub scheduled + manual job |

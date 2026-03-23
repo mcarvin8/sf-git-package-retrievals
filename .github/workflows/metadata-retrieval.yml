@@ -1,0 +1,105 @@
+# Retrieves Salesforce metadata into the checked-out branch using scripts/bash/retrieve_packages.sh
+# Prerequisites: repository secret ORG_AUTH_URL (SFDX auth URL), sfdx-project.json, force-app/
+#
+# Scheduled runs use env.PACKAGE_NAME below. For a different manifest per schedule, duplicate
+# this file with another name and set PACKAGE_NAME + cron accordingly.
+
+name: Salesforce metadata retrieval
+
+on:
+  workflow_dispatch:
+    inputs:
+      package_name:
+        description: Manifest file name under scripts/packages/ (e.g. Objects.xml)
+        required: true
+        default: Objects.xml
+        type: string
+      prepurge:
+        description: Pre-purge force-app folders for types in the manifest (true/false)
+        required: false
+        default: "false"
+        type: choice
+        options:
+          - "false"
+          - "true"
+  schedule:
+    # Daily 07:00 UTC — change as needed
+    - cron: "0 7 * * *"
+
+concurrency:
+  group: metadata-retrieval-${{ github.repository }}-${{ github.ref_name }}
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+env:
+  DEPLOY_TIMEOUT: 240
+  # Default manifest for scheduled cron (workflow_dispatch overrides via inputs)
+  PACKAGE_NAME: Objects.xml
+  PREPURGE: "false"
+  # HTTPS remote for git push (GITHUB_TOKEN is scoped to this repository)
+  GIT_HTTPS_PATH: https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git
+
+jobs:
+  retrieve:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set job environment from event
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "PACKAGE_NAME=${{ inputs.package_name }}" >> "$GITHUB_ENV"
+            echo "PREPURGE=${{ inputs.prepurge }}" >> "$GITHUB_ENV"
+          fi
+
+      - name: Install Salesforce CLI and jq
+        run: |
+          set -euo pipefail
+          sudo apt-get update
+          sudo apt-get install -y curl git jq
+          curl -fsSL https://deb.nodesource.com/setup_lts.x | sudo -E bash -
+          sudo apt-get install -y nodejs
+          npm install --global @salesforce/cli@latest
+          sf version --verbose --json
+
+      - name: Configure git and sync branch
+        env:
+          GIT_USER_NAME: ${{ vars.GIT_USER_NAME }}
+          GIT_USER_EMAIL: ${{ vars.GIT_USER_EMAIL }}
+        run: |
+          set -euo pipefail
+          NAME="${GIT_USER_NAME:-github-actions[bot]}"
+          EMAIL="${GIT_USER_EMAIL:-github-actions[bot]@users.noreply.github.com}"
+          git fetch -q origin
+          git config user.name "$NAME"
+          git config user.email "$EMAIL"
+          git checkout -q "${{ github.ref_name }}"
+          git pull --ff-only -q origin "${{ github.ref_name }}"
+
+      - name: Log in to Salesforce org
+        env:
+          ORG_AUTH_URL: ${{ secrets.ORG_AUTH_URL }}
+        run: |
+          set -euo pipefail
+          if [ -z "${ORG_AUTH_URL:-}" ]; then
+            echo "ORG_AUTH_URL secret is not set." >&2
+            exit 1
+          fi
+          echo "$ORG_AUTH_URL" | sf org login sfdx-url --set-default --sfdx-url-stdin
+
+      - name: Retrieve metadata and push if changed
+        run: |
+          set -euo pipefail
+          source ./scripts/bash/retrieve_packages.sh
+
+      - name: Restore detached state (match GitLab after_script)
+        if: always()
+        run: |
+          set -euo pipefail
+          git -c advice.detachedHead=false checkout -q "${{ github.sha }}"
+          git branch -D "${{ github.ref_name }}" 2>/dev/null || true
