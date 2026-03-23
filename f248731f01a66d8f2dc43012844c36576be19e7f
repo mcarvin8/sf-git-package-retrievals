@@ -1,0 +1,25 @@
+sfdx-project.json
+  e1db31e7aa077ced 1-12
+.forceignore
+  e1db31e7aa077ced 1-5
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.1.12",
+  "base_commit_sha": "f248731f01a66d8f2dc43012844c36576be19e7f",
+  "prompts": {
+    "e1db31e7aa077ced": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "f80db1d8-6e5f-46b0-84e8-6715c3bc1210",
+        "model": "default"
+      },
+      "human_author": "Matt Carvin <90224411+mcarvin8@users.noreply.github.com>",
+      "messages": [],
+      "total_additions": 17,
+      "total_deletions": 0,
+      "accepted_lines": 17,
+      "overriden_lines": 0
+    }
+  }
+}
