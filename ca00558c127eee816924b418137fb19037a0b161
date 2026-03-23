@@ -1,0 +1,27 @@
+README.md
+  51d842f1ae58aa6a 3,14,24-27,39,44,72,86,88,103
+scripts/packages/Objects.xml
+  51d842f1ae58aa6a 1-2
+.github/workflows/metadata-retrieval.yml
+  51d842f1ae58aa6a 3-4,27-31,94-95,102-103
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.1.12",
+  "base_commit_sha": "ca00558c127eee816924b418137fb19037a0b161",
+  "prompts": {
+    "51d842f1ae58aa6a": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "4ec17a88-dbdb-4c26-94a7-786afad5cc78",
+        "model": "default"
+      },
+      "human_author": "Matt Carvin <90224411+mcarvin8@users.noreply.github.com>",
+      "messages": [],
+      "total_additions": 41,
+      "total_deletions": 324,
+      "accepted_lines": 36,
+      "overriden_lines": 0
+    }
+  }
+}
