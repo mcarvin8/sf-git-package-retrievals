@@ -1,0 +1,98 @@
+.github/workflows/metadata-retrieval.yml
+  51d842f1ae58aa6a 3-4,27-31,94-95,102-103,107-108
+README.md
+  51d842f1ae58aa6a 3,14,24-27,39,44,72,86,88,103
+scripts/packages/Objects.xml
+  51d842f1ae58aa6a 1-2
+scripts/bash/retrieve_packages.sh
+  51d842f1ae58aa6a 13-14,18,27-30
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.1.12",
+  "base_commit_sha": "c5a7ad499bdac7d3a825be557c6b4d6721bc5ac5",
+  "prompts": {
+    "51d842f1ae58aa6a": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "4ec17a88-dbdb-4c26-94a7-786afad5cc78",
+        "model": "default"
+      },
+      "human_author": "Matt Carvin <90224411+mcarvin8@users.noreply.github.com>",
+      "messages": [
+        {
+          "type": "user",
+          "text": "ORG_ALIAS: ${{ secrets.ORG_ALIAS }}\n\nhow do i update the github workflow example to accept either a secret or just a normal CI/CD variable for org alias as this is not a credential, so the user could provide this at runtime or via secret",
+          "timestamp": "2026-03-23T19:48:08.744Z"
+        },
+        {
+          "type": "assistant",
+          "text": "Reading the GitHub workflow to see how `ORG_ALIAS` is used and updating it to support secrets, variables, and optional runtime input.",
+          "timestamp": "2026-03-23T19:48:33.351Z"
+        },
+        {
+          "type": "assistant",
+          "text": "Updating the workflow to prefer a non-secret Actions variable, fall back to the secret for backward compatibility, and add an optional `workflow_dispatch` input for runtime override. Updating the README to document this.",
+          "timestamp": "2026-03-23T19:48:50.315Z"
+        },
+        {
+          "type": "assistant",
+          "text": "Here’s what changed and how it behaves.\n\n### Resolution order\n\nOn the login step, `ORG_ALIAS` is now:\n\n1. **`inputs.org_alias`** — only for `workflow_dispatch`, and only when non-empty  \n2. **`vars.ORG_ALIAS`** — repo or org **Actions variable** (non-secret)  \n3. **`secrets.ORG_ALIAS`** — backward compatible if someone already stored it as a secret  \n\nExpression used:\n\n```yaml\nORG_ALIAS: ${{ github.event_name == 'workflow_dispatch' && inputs.org_alias != '' && inputs.org_alias || vars.ORG_ALIAS || secrets.ORG_ALIAS }}\n```\n\n`workflow_dispatch && inputs.org_alias != ''` short-circuits on scheduled runs, so `inputs` is not relied on when the event isn’t manual.\n\n### Other updates\n\n- Optional **`org_alias`** input on `workflow_dispatch` for a one-off override.  \n- A check that fails with a clear message if `ORG_ALIAS` is missing after that resolution.  \n- **README** updated to describe variable vs secret and the manual input.\n\n### What users should do\n\n- **Preferred:** Settings → Secrets and variables → Actions → **Variables** → add `ORG_ALIAS`.  \n- **Legacy:** keep `ORG_ALIAS` as a **secret**; it still works.  \n- **One run:** use “Run workflow” and fill **org alias** when you want to override variables/secrets for that run only.",
+          "timestamp": "2026-03-23T19:50:34.303Z"
+        },
+        {
+          "type": "user",
+          "text": "update the README.md to also explain when the package input is \"Objects.xml\" , it will run a sf project generate manifest command to generaet the manifest of the custom objects in the target org before running the retrieval command, since wildcards don't work for standard objects and this makes the retrieval accurate to what's in the org now",
+          "timestamp": "2026-03-23T19:50:35.756Z"
+        },
+        {
+          "type": "assistant",
+          "text": "Checking how `Objects.xml` and manifest generation are implemented so the README matches the code.",
+          "timestamp": "2026-03-23T19:50:38.456Z"
+        },
+        {
+          "type": "assistant",
+          "text": "Updating the README to document `Objects.xml` behavior and add `SF_RETRIEVE_ORG_ALIAS` to the environment table (the script uses it for `--from-org`).",
+          "timestamp": "2026-03-23T19:50:51.203Z"
+        },
+        {
+          "type": "assistant",
+          "text": "Here’s what was added to `README.md`:\n\n### Intro\n- Clarifies that most runs copy a manifest from `scripts/packages/`, and that **`Objects.xml`** is called out separately.\n\n### “How retrieval works” (new step 4)\n- When **`PACKAGE_NAME`** is **`Objects.xml`**, the script **does not** copy that file into `manifest/`.\n- It runs **`sf project generate manifest`** on the authenticated org with **`--metadata CustomObject`**, producing **`manifest/package.xml`** with the custom objects that exist **now**.\n- Explains that **wildcard-based** manifests don’t match how **standard** objects work in Metadata API retrieval, so generating from the org keeps custom-object retrieval accurate.\n- Notes that **pre-purge** still uses types from `scripts/packages/Objects.xml` (including for `CustomObject`).\n- Later steps renumbered to 5–7.\n\n### Other touchpoints\n- **Requirements** table: `Objects.xml` is described as mainly for pre-purge / comments; real retrieve manifest is generated at runtime.\n- **`PACKAGE_NAME` env table**: points to step 4 for **`Objects.xml`**.\n- **`SF_RETRIEVE_ORG_ALIAS`**: documented (optional; default **`PRODUCTION`**; should match **`ORG_ALIAS`** if you don’t use `PRODUCTION`).\n- **GitLab** scheduled variables table: `PACKAGE_NAME` note + optional **`SF_RETRIEVE_ORG_ALIAS`** row.\n- **GitHub Actions**: manual **`package_name`** = **`Objects.xml`** runs the same generate-then-retrieve path as scheduled **`PACKAGE_NAME=Objects.xml`**.\n- **“Adding this…”**: `manifest/package.xml` creation mentions **`Objects.xml`** + **`sf project generate manifest`**.",
+          "timestamp": "2026-03-23T19:53:07.206Z"
+        },
+        {
+          "type": "user",
+          "text": "update the code and readme to only use ORG_ALIAS and not the SF_RETRIEVE_ORG_ALIAS",
+          "timestamp": "2026-03-23T19:53:10.816Z"
+        },
+        {
+          "type": "assistant",
+          "text": "Using `ORG_ALIAS` in the script and persisting it to `GITHUB_ENV` after login so the retrieve step receives it (it's currently only set on the login step).",
+          "timestamp": "2026-03-23T19:53:24.916Z"
+        },
+        {
+          "type": "assistant",
+          "text": "Here’s what changed:\n\n### `scripts/bash/retrieve_packages.sh`\n- **`Objects.xml`** path now uses **`ORG_ALIAS`** for `sf project generate manifest --from-org` (no `SF_RETRIEVE_ORG_ALIAS` / `PRODUCTION` fallback).\n- If `Objects.xml` is used and **`ORG_ALIAS` is empty**, the script exits with a clear error.\n- Header comments updated to describe **`ORG_ALIAS`** only.\n\n### `.github/workflows/metadata-retrieval.yml`\n- After a successful `sf org login`, the workflow runs **`echo \"ORG_ALIAS=$ORG_ALIAS\" >> \"$GITHUB_ENV\"`** so the **Retrieve** step (and the script) get the same alias. Without that, `ORG_ALIAS` only existed on the login step’s environment.\n\n### `README.md`\n- Removed **`SF_RETRIEVE_ORG_ALIAS`** from the env table and the GitLab variables table.\n- **`ORG_ALIAS`** row now covers login + **`Objects.xml`** manifest generation, and notes GitHub’s **`GITHUB_ENV`** behavior.\n- Step 4 and the GitHub **`ORG_ALIAS`** bullet mention **`--from-org $ORG_ALIAS`** and **`GITHUB_ENV`**.\n\nGitLab already exposes **`ORG_ALIAS`** for the whole job, so no `.gitlab-ci.yml` change was required.",
+          "timestamp": "2026-03-23T19:54:25.084Z"
+        }
+      ],
+      "total_additions": 41,
+      "total_deletions": 324,
+      "accepted_lines": 34,
+      "overriden_lines": 0
+    },
+    "e1db31e7aa077ced": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "f80db1d8-6e5f-46b0-84e8-6715c3bc1210",
+        "model": "default"
+      },
+      "human_author": "Matt Carvin <90224411+mcarvin8@users.noreply.github.com>",
+      "messages": [],
+      "total_additions": 17,
+      "total_deletions": 0,
+      "accepted_lines": 200,
+      "overriden_lines": 0
+    }
+  }
+}
