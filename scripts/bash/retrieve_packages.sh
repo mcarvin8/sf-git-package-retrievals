@@ -110,7 +110,7 @@ git add --renormalize force-app/ 2>/dev/null || true
 if [[ -n $(git status --porcelain force-app/) ]]; then
     echo "Changes found in the force-app directory..."
     git add force-app
-    git commit -m "Retrieve latest metadata defined in $PACKAGE_NAME [skip ci]"
+    git commit -m "chore(metadata-retrieval): $PACKAGE_NAME @ $ORG_ALIAS [skip ci]"
     # Push changes to remote skipping pipeline
     git push "$GIT_HTTPS_PATH" -o ci.skip
 else
